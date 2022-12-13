@@ -12,7 +12,7 @@
 
   tasks: 
 
-   - name: Request EVI {{ checkvni }} status...
+   - name: Request EVI {{ refevi }} status...
      vars:
        ansible_connection: network_cli
      any_errors_fatal: true
@@ -23,7 +23,7 @@
 
      register: evi_log
 
-   - name: Request EVI {{ refvni }} mac count...
+   - name: Request EVI {{ refevi }} mac count...
      vars:
        ansible_connection: network_cli
      any_errors_fatal: true
@@ -36,23 +36,16 @@
    - name: Closed Loop Verification - EVI status
 
      debug:
-       msg: "Checked EVI status"
+       msg: "Checked EVI status."
      when: evi_log is search ("EVI.*up")
      failed_when: evi_log is not search ("EVI.*up")
 
    - name: Closed Loop Verification - EVI mac count
 
-     vars:
-       maccount: '{{evi_mac_count}}|split(":")[1]'
-
      debug:
-       msg: "Checked EVI mac count, {{maccount}}"
-     when: evi_log is search ("Remote MAC Address Count :")
-     failed_when: evi_log is not search ("EVI.*up")
+       msg: "Checked EVI mac count."
+     when: evi_mac_count['stdout'][0].split(':')[1]|int >= leafcount|int-1
+     failed_when: evi_mac_count['stdout'][0].split(':')[1]|int < leafcount|int-1
 
 
-
-   - name: Print log results evi check
-     debug:
-       var: evi_log
 
