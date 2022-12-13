@@ -6,7 +6,7 @@
     - dellemc.os10
 
   vars:
-    checkvni: 999
+    refvni: 999
 
   tasks: 
 
@@ -16,7 +16,8 @@
      any_errors_fatal: true
      os10_command:
        commands:
-         - show evpn evi {{ checkvni }}
+         - show evpn evi {{ refevi }}
+         - show evpn mac evi {{ refevi }} count
 
      register: evi_log
 
