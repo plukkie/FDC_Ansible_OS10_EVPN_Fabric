@@ -1,39 +1,33 @@
 ---
-- hosts: os10-switch12
+- hosts: leafs
   connection: network_cli
   gather_facts: false
   collections:
     - dellemc.os10
 
   vars:
-    pings: 2
+    checkvni: 999
 
   tasks: 
-    - name: Run connectivity ping tests
-      any_errors_fatal: true
-      os10_command:
-        commands:
-          - ping vrf vlan1010 -c{{ pings }} {{ item }} 
 
-        retries: 2
-      
-        wait_for:
-          - result[0] contains "{{ pings }} packets transmitted, {{ pings }} received"
-          - result[0] contains ", 0% packet loss"
+   - name: Request EVI {{ checkvni }} status...
+     vars:
+       ansible_connection: network_cli
+     any_errors_fatal: true
+     os10_command:
+       commands:
+         - show evpn evi {{ checkvni }}
 
-      with_items:
-         - 172.16.1.11
-         - 172.16.1.12
-         - 172.16.2.11
-         - 172.16.2.12
-         - 200.200.200.11
-         - 100.100.100.11
-         - 100.100.100.12
+     register: evi_log
 
-      register: ping_log
-      
-    - name: Print log results of Ping tests
-      debug:
-        var: ping_log
 
-   
+   - name: Closed Loop Verification...
+
+     debug:
+       msg: "Checked EVI status"
+     when: evi_log is search ("EVI.*up")
+     failed_when: evi_log is not search ("EVI.*up")
+
+   - name: Print log results evi check
+     debug:
+       var: evi_log
