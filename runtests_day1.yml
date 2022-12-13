@@ -33,9 +33,12 @@
 
    - name: Closed Loop Verification - EVI mac count
 
+     vars:
+       maccount: evi_log is search ("Remote MAC Address Count :").split(":")[1]
+
      debug:
        msg: "Checked EVI mac count"
-     when: evi_log is search ("Remote MAC Address Count :")
+     when: evi_log is search ("Remote MAC Address Count :").split(":")[1]
      failed_when: evi_log is not search ("EVI.*up")
 
 
