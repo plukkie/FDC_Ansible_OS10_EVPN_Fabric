@@ -7,6 +7,8 @@
 
   vars:
     refevi: 999
+    leafcount: "{{ groups['leafs'] | length }}"
+    spinecount: "{{ groups['spines'] | length }}"
 
   tasks: 
 
@@ -22,13 +24,23 @@
      register: evi_log
 
 
-   - name: Closed Loop Verification...
+   - name: Closed Loop Verification: EVI status
 
      debug:
        msg: "Checked EVI status"
      when: evi_log is search ("EVI.*up")
      failed_when: evi_log is not search ("EVI.*up")
 
+   - name: Closed Loop Verification: EVI mac count
+
+     debug:
+       msg: "Checked EVI mac count"
+     when: evi_log is search ("Remote MAC Address Count :")
+     failed_when: evi_log is not search ("EVI.*up")
+
+
+
    - name: Print log results evi check
      debug:
        var: evi_log
+
