@@ -188,14 +188,14 @@ os10_interface:
     admin: up
   ethernet 1/1/4:
     admin: up
-    desc: Uplink to os10-SPINE-2 eth1/1
-    ip_and_mask: 192.168.2.1/31
+    desc: Uplink to os10-SPINE-1 eth1/1
+    ip_and_mask: 192.168.1.1/31
     mtu: 9216
     switchport: false
   ethernet 1/1/8:
     admin: up
-    desc: Uplink to os10-SPINE-1 eth1/1
-    ip_and_mask: 192.168.1.1/31
+    desc: Uplink to os10-SPINE-2 eth1/1
+    ip_and_mask: 192.168.2.1/31
     mtu: 9216
     switchport: false
   ethernet 1/1/9:
