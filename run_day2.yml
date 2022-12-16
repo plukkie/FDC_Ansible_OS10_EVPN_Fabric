@@ -1,0 +1,22 @@
+---
+
+- import_playbook: create_rendered_day2_files.yaml
+
+- collections:
+  - dellemc.os10
+  connection: network_cli
+  gather_facts: false
+  hosts:
+    - switches
+
+  pre_tasks:
+  - include_vars:
+      files_matching: "{{ inventory_hostname }}-vlanvars.yaml"
+      dir: rendered
+ 
+       
+  roles:
+  - os10_vrf
+  - os10_interface
+  - os10_vlan
+

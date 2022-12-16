@@ -1,0 +1,77 @@
+{% set ihn = inventory_hostname -%}
+{% set hostnr = inventory_hostname.lower().split('leaf')|last|split('-')|last -%}
+{% set vlanarray = [] -%}
+{% set vrfarray = [] -%}
+
+{% if myvars is defined %}
+
+{% for vlan in myvars['vlandata'] %}
+{% if ihn in myvars['vlandata'][vlan]['hosts'] %}
+{% if vlanarray|length == 0 %}
+os10_interface:
+{% endif %}
+  virtual-network {{ vlan }}:
+{% if myvars['vlandata'][vlan]['vrf'] is defined and myvars['vlandata'][vlan]['vrf'] %}
+    vrf: {{ myvars['vlandata'][vlan]['vrf'] }}
+{% endif %}
+{% if myvars['vlandata'][vlan]['net'] is defined and myvars['vlandata'][vlan]['net'] %}
+{% set x = myvars['vlandata'][vlan].net.split(".") %}
+{% set vgw = x[0]+'.'+x[1]+'.'+x[2]+'.'+myvars['vlandata'][vlan].agw|string %}
+{% set intip = x[0]+'.'+x[1]+'.'+x[2]+'.'+hostnr|string+'/'+myvars['vlandata'][vlan]['mask']|string %}
+    virtual_gateway_ip: "{{ vgw }}"
+    ip_and_mask: {{ intip }}
+{% endif %}
+    admin: up
+{% if myvars['vlandata'][vlan]['desc'] is defined and myvars['vlandata'][vlan]['desc'] %}
+    descr: "{{ myvars['vlandata'][vlan]['desc'] }}"
+{% else %}
+    descr: "vxlan vlan {{ vlan }}"
+{% endif %}
+{{ vlanarray.append(vlan) }}
+{% endif %}
+{% endfor -%}
+
+{% if vlanarray|length > 0 %}
+os10_vlan:
+{% endif -%}
+
+{% for vlan in myvars['vlandata'] %}
+{% if ihn in myvars['vlandata'][vlan]['hosts'] %}
+  Vlan {{ vlan }}:
+{% if myvars['vlandata'][vlan]['desc'] is defined and myvars['vlandata'][vlan]['desc'] %}
+    descr: "{{ myvars['vlandata'][vlan]['desc'] }}"
+{% else %}
+    descr: "vlan {{ vlan }}"
+{% endif %}
+    ip_and_mask: null
+    state: present
+    tagged_members:
+{% for int in myvars['vlandata'][vlan]['interfaces'] %}
+    - port: {{ int|lower }}
+      state: present
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+{% for vlan in myvars['vlandata'] %}
+{% if ihn in myvars['vlandata'][vlan]['hosts'] %}
+{% if myvars['vlandata'][vlan]['vrf'] is defined and myvars['vlandata'][vlan]['vrf'] %}
+{% if myvars['vlandata'][vlan]['vrf'] not in vrfarray %}
+{{ vrfarray.append(myvars['vlandata'][vlan]['vrf']) -}}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endfor -%}
+
+{% if vrfarray|length > 0 %}
+os10_vrf:
+  vrfdetails:
+{% for vrf in vrfarray %}
+    - vrf_name: "{{ vrf }}"
+      state: present
+{% endfor %}
+{% endif %}
+
+{% endif %}
+
+

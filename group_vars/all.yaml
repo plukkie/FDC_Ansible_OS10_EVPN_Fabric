@@ -1,0 +1,7 @@
+cli:
+  auth_pass: null
+  authorize: true
+  host: '{{ ansible_host }}'
+  password: admin
+  username: admin
+

@@ -1,3 +1,9 @@
+cli:
+  auth_pass: null
+  authorize: true
+  host: '{{ ansible_host }}'
+  password: admin
+  username: admin
 hostname: os10-LEAF-1
 os10_bgp:
   asn: 64625
@@ -124,7 +130,7 @@ os10_bgp:
 os10_interface:
   ethernet 1/1/1:
     admin: up
-    desc: UplinkUplink
+    desc: Uplink
     switchport: false
     ip_and_mask: 2.0.1.0/31
     vrf: Vrf1

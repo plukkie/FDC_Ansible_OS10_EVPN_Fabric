@@ -1,0 +1,20 @@
+!
+evpn
+!
+ evi 501501
+  vni 501501
+  rd auto
+  route-target 501:1 both
+  exit
+!
+Virtual-network 501
+ description vlan:1010_extended_to_switches:os10-LEAF-3_os10-LEAF-4
+ vxlan-vni 501501
+ exit
+!
+!
+interface Vlan 501
+ virtual-network 501
+ mtu 9216
+!
+!

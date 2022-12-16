@@ -1,0 +1,87 @@
+
+
+
+
+hostname: os10-LEAF-2
+
+os10_bgp:
+  asn: 64625
+  best_path:
+    as_path: multipath-relax
+  graceful_restart: true
+  maxpath_ebgp: 2
+  neighbor:
+  - adv_interval: 1
+    fall_over: present
+    name: spine-leaf
+    timer: 3 9
+    type: peergroup
+  - address_family:
+    - allow_as_in: 1
+      type: ipv4
+    admin: up
+    adv_interval: 1
+    fall_over: present
+    ip: 192.168.1.5
+    name: spine 1 Underlay
+    peergroup: spine-leaf
+    timer: 3 9
+    type: ipv4
+    remote_asn: 65001
+  - address_family:
+    - activate: false
+      type: ipv4
+    - activate: true
+      type: l2vpn
+    admin: up
+    adv_interval: 1
+    ebgp_multihop: 4
+    fall_over: present
+    ip: 10.0.1.1
+    name: spine 1 Overlay
+    peergroup: spine-leaf
+    remote_asn: 65001
+    send_community:
+    - state: present
+      type: extended
+    sender_loop_detect: false
+    src_loopback: 0
+    timer: 3 9
+    type: ipv4
+  - address_family:
+    - allow_as_in: 1
+      type: ipv4
+    admin: up
+    adv_interval: 1
+    fall_over: present
+    ip: 192.168.1.7
+    name: spine 2 Underlay
+    peergroup: spine-leaf
+    timer: 3 9
+    type: ipv4
+    remote_asn: 65001
+  - address_family:
+    - activate: false
+      type: ipv4
+    - activate: true
+      type: l2vpn
+    admin: up
+    adv_interval: 1
+    ebgp_multihop: 4
+    fall_over: present
+    ip: 10.0.1.2
+    name: spine 2 Overlay
+    peergroup: spine-leaf
+    remote_asn: 65001
+    send_community:
+    - state: present
+      type: extended
+    sender_loop_detect: false
+    src_loopback: 0
+    timer: 3 9
+    type: ipv4
+  - admin: up
+    ip: 192.168.168.0
+    type: ipv4
+    remote_asn: 64625
+
