@@ -2,9 +2,17 @@
 {% set global = { } -%}
 {% set ptp = conf['fabric']['common']['interlinknet'].split('.') %}
 {% set ptpnet = ptp[0]+'.'+ptp[1]+'.'+ptp[2] %}
-{% set spinecount = jsonobj['gns3']['nodesdata']['templates']['spine']['count']|int -%}
-{% set leafcount = jsonobj['gns3']['nodesdata']['templates']['leaf']['count']|int -%}
+{% set spinecount = conf['gns3']['nodesdata']['templates']['spine']['count']|int -%}
+{% set leafcount = conf['gns3']['nodesdata']['templates']['leaf']['count']|int -%}
 {% set btbarray = conf['fabric']['leaf']['btbiplink'].split('.') %}
+{% set L3vrf = conf['fabric']['common']['L3VRF'] %}
+{% set bordercount = conf['gns3']['nodesdata']['templates']['border']['count']|int -%} 
+{% set borderiparray = conf['fabric']['common']['bordersubnet'].split('.') -%}
+{% set borderas = conf['fabric']['common']['borderas']|int -%}
+{% set bordernet = borderiparray[0]+'.'+borderiparray[1]+'.'+borderiparray[2] %}
+{% set slotsyntax = conf['fabric']['common']['slot_syntax'] %}
+{% set interlinkiparray = conf['fabric']['common']['interlinknet'].split('.') -%}
+{% set interlinknet = interlinkiparray[0]+'.'+interlinkiparray[1]+'.'+interlinkiparray[2] %}
 
 {% if 'leaf' in inventory_hostname|lower %}
 {% set role = 'leaf' %}
@@ -14,6 +22,7 @@
 {% set firstbgppeer = ptp[3]|int+1+(switchnr-1)*peercount*2 %}
 {% set firstpeerasnr = conf['fabric']['spine']['as']|int %}
 {% set firstpeerridarray = conf['fabric']['spine']['routerid'].split('.') %}
+{% set firstborderpeer = borderiparray[3]|int+1+(switchnr-1)*bordercount*2 %}
 {% elif 'spine' in inventory_hostname|lower %}
 {% set role = 'spine' %}
 {% set nameprefix = conf['fabric'][role]['nameprefix'] %}
@@ -126,4 +135,80 @@ os10_bgp:
     ip: {{ bgpbtbip }}
     type: ipv4
     remote_asn: {{ global.as }}
+  redistribute:
+  - address_type: ipv4
+    route_map_name: spine-leaf
+    route_type: connected
+  router-id: {{ rid }}
+{% if role == 'leaf' and switchnr <= 2 %}
+  vrf:
+    name: {{ L3vrf }}
+  vrfs:
+  - name: {{ L3vrf }}
+    neighbor:
+{% for cnt in range(bordercount) %}
+{% if cnt is even %}
+{% set peerasn = (borderas + cnt/2)|int %}
+{% else %}
+{% set peerasn = (borderas + cnt/2-0.5)|int %}
+{% endif %}
+    - address_family:
+      - type: ipv4
+      admin: up
+      ip: {{ bordernet }}.{{firstborderpeer+2*cnt}} 
+      remote_asn: {{ peerasn }} 
+      type: ipv4
+{% endfor %}
+    redistribute:
+    - address_type: ipv4
+      route_type: l2vpn
+    - address_type: ipv4
+      route_map_name: deny_v4_host_routes
+      route_type: l2vpn
+    - address_type: ipv4
+      route_type: connected
+{% endif %}
+
+{% set adapter = conf['gns3']['nodesdata']['templates'][role]['interlinks']['1st_adapter_number']|int %}
+{% set astep = conf['gns3']['nodesdata']['templates'][role]['interlinks']['adapterstep']|int %}
+{% set port = conf['gns3']['nodesdata']['templates'][role]['interlinks']['port']|int %}
+{% set pstep = conf['gns3']['nodesdata']['templates'][role]['interlinks']['portstep']|int %}
+{{ global.update ( { 'int' : adapter } ) -}}
+{{ global.update ( { 'intip' : interlinkiparray[3]|int + (switchnr-1)*2*peercount } ) -}}
+
+os10_interface:
+{% for x in range(peercount) %}
+  ethernet {{ slotsyntax }}/{{ global.int }}: 
+    admin: up
+    switchport: false
+{% if role == 'leaf' %}
+    desc: interlink to spine {{ x+1 }}
+{% else %}
+    desc: interlink to leaf {{ x+1 }}
+{% endif %}
+    mtu: 9216
+    ip_and_mask: {{ interlinknet }}.{{ global.intip }}/31
+{{ global.update ( { 'int' : global.int + astep } ) -}}
+{{ global.update ( { 'intip' : global.intip|int + 2 } ) -}}
+{% endfor -%}
+
+{% if bordercount > 0 and role == 'leaf' and switchnr <= 2 %}
+{% set adapter = conf['gns3']['nodesdata']['templates'][role]['borderlinks']['1st_adapter_number']|int %}
+{% set astep = conf['gns3']['nodesdata']['templates'][role]['borderlinks']['adapterstep']|int %}
+{% set port = conf['gns3']['nodesdata']['templates'][role]['borderlinks']['port']|int %}
+{% set pstep = conf['gns3']['nodesdata']['templates'][role]['borderlinks']['portstep']|int %}
+{{ global.update ( { 'int' : adapter } ) -}}
+{{ global.update ( { 'intip' : borderiparray[3]|int + (switchnr-1)*2*bordercount } ) -}}
+{% for x in range(bordercount) %}
+  ethernet {{ slotsyntax }}/{{ global.int }}:
+    admin: up
+    switchport: false
+    desc: link to border {{ x+1 }}
+    ip_and_mask: {{ bordernet }}.{{ global.intip }}/31
+    vrf: {{ L3vrf }} 
+{{ global.update ( { 'int' : global.int + astep } ) -}}
+{{ global.update ( { 'intip' : global.intip|int + 2 } ) -}}
+{% endfor %}
+{% endif %}
+
 
