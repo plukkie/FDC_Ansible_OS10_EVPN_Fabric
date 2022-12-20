@@ -216,5 +216,150 @@ os10_interface:
     desc: link to border 2
     ip_and_mask: 2.0.1.6/31
     vrf: Vrf1 
+  ethernet 1/1/9:
+    admin: up
+    switchport: false
+    desc: VLT-interlink to leaf 1
+  ethernet 1/1/10:
+    admin: up
+    switchport: false
+    desc: VLT-interlink to leaf 1
+  ethernet 1/1/11:
+    admin: up
+    switchport: false
+    desc: VLT-interlink to leaf 1
+  ethernet 1/1/12:
+    admin: up
+    switchport: false
+    desc: VLT-interlink to leaf 1
+  virtual-network 999999:
+    vrf: Vrf1
+    ip_and_mask: 172.16.0.2/24
+    virtual_gateway_ip: "172.16.0.254"
+    admin: up
+    desc: "Fabric wide vxlan 999999"
+  loopback 0:
+    admin: up
+    ip_and_mask: 10.0.2.2/32
+  loopback 1:
+    admin: up
+    ip_and_mask: 10.10.10.1
+  ethernet 1/1/3:
+    admin: up
+    desc: to host 1
+    mtu: 9216
+    portmode: trunk
+    switchport: true
+  ethernet 1/1/7:
+    admin: up
+    desc: to host 2
+    mtu: 9216
+    portmode: trunk
+    switchport: true
 
+os10_lldp:
+  enable: true
+
+os10_ntp:
+  server:
+  - ip: 10.204.11.135
+    prefer: true
+
+os10_prefix_list:
+- entries:
+  - condition_list:
+    - condition: ge
+      prelen: 32
+    mask: '0'
+    net_num: 0.0.0.0
+    number: 10
+    permit: true
+    state: present
+  - condition_list:
+    - condition: ge
+      prelen: 31
+    mask: '0'
+    net_num: 0.0.0.0
+    number: 20
+    permit: true
+    state: present
+  name: deny_v4_host_routes
+  state: present
+  type: ipv4
+- entries:
+  - condition_list:
+    - condition: ge
+      prelen: '24'
+    mask: '8'
+    net_num: 10.0.0.0
+    number: 30
+    permit: true
+    state: present
+  - condition_list:
+    - condition: ge
+      prelen: '24'
+    mask: '16'
+    net_num: 192.168.0.0
+    number: 50
+    permit: true
+    state: present
+  name: spine-leaf
+  state: present
+  type: ipv4
+
+os10_route_map:
+  route_map:
+  - match:
+    - ip_type: ipv4
+      prefix_list: spine-leaf
+    name: spine-leaf
+    permit: true
+    seq_num: 10
+  - match:
+    - ip_type: ipv4
+      prefix_list: deny_v4_host_routes
+    name: deny_v4_host_routes
+    permit: true
+    seq_num: 10
+
+os10_system:
+  hostname: os10-LEAF-2 
+
+os10_vlan:
+  Vlan 999:
+    description: "Cluster management"
+    ip_and_mask: null
+    state: present
+    untagged_members:
+    - port: ethernet 1/1/3
+      state: present
+    - port: ethernet 1/1/7
+      state: present
+  Vlan 4000:
+    description: iBGP_link
+    ip_and_mask: 192.168.168.1/31
+    state: present
+
+os10_vlt:
+  discovery_intf: 1/1/9-1/1/13
+  discovery_intf_state: present
+  domain: 12
+  peer_routing: true
+  vlt_mac: 00:00:00:00:00:01
+
+os10_xstp:
+  enable: true
+  intf:
+    ethernet 1/1/3:
+      edge_port: true
+    ethernet 1/1/7:
+      edge_port: true
+  rstp:
+    bridge_priority: 0
+  type: rstp
+
+os10_vrf:
+  vrfdetails:
+    - vrfname: "Vrf1"
+      state: present
 

@@ -179,5 +179,49 @@ os10_interface:
     desc: interlink to leaf 4
     mtu: 9216
     ip_and_mask: 192.168.1.14/31
+  loopback 0:
+    admin: up
+    ip_and_mask: 10.0.1.2/32
 
+os10_lldp:
+  enable: true
+
+os10_ntp:
+  server:
+  - ip: 10.204.11.135
+    prefer: true
+
+os10_prefix_list:
+- entries:
+  - condition_list:
+    - condition: ge
+      prelen: '24'
+    mask: '8'
+    net_num: 10.0.0.0
+    number: 10
+    permit: true
+    state: present
+  - condition_list:
+    - condition: ge
+      prelen: '24'
+    mask: '16'
+    net_num: 192.168.0.0
+    number: 20
+    permit: true
+    state: present
+  name: spine-leaf
+  state: present
+  type: ipv4
+
+os10_route_map:
+  route_map:
+  - match:
+    - ip_type: ipv4
+      prefix_list: spine-leaf
+    name: spine-leaf
+    permit: true
+    seq_num: 10
+
+os10_system:
+  hostname: os10-SPINE-2 
 
