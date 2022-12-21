@@ -25,6 +25,7 @@
 
 {% if 'leaf' in inventory_hostname|lower %}
 {% set role = 'leaf' %}
+{% set peerrole = 'spine' %}
 {% set nameprefix = conf['fabric'][role]['nameprefix'] %}
 {% set switchnr = inventory_hostname[nameprefix|length:]|int %}
 {% set peercount = spinecount %}
@@ -34,6 +35,7 @@
 {% set firstborderpeer = borderiparray[3]|int+1+(switchnr-1)*bordercount*2 %}
 {% elif 'spine' in inventory_hostname|lower %}
 {% set role = 'spine' %}
+{% set peerrole = 'spine' %}
 {% set nameprefix = conf['fabric'][role]['nameprefix'] %}
 {% set switchnr = inventory_hostname[nameprefix|length:]|int %}
 {% set peercount = leafcount %}
@@ -109,17 +111,22 @@ os10_bgp:
 {% set peerasn = (firstpeerasnr + cnt/2-0.5)|int %}
 {% endif %}
   - address_family:
-    - allow_as_in: 1
-      type: ipv4
+    - type: ipv4
+{% if role == 'leaf' %}
+      allow_as_in: 1
+{% endif %}
     admin: up
     adv_interval: 1
     fall_over: present
     ip: {{ptpnet}}.{{firstbgppeer+2*cnt}}
-    name: spine {{ cnt+1 }} Underlay
+    name: {{ peerrole }} {{ cnt+1 }} Underlay
     peergroup: spine-leaf
     timer: 3 9
     type: ipv4
     remote_asn: {{ peerasn }}
+{% if role == 'spine' %}
+    sender_loop_detect: false
+{% endif %}
   - address_family:
     - activate: false
       type: ipv4
@@ -127,10 +134,12 @@ os10_bgp:
       type: l2vpn
     admin: up
     adv_interval: 1
+{% if role == 'leaf' %}
     ebgp_multihop: 4
+{% endif %}
     fall_over: present
     ip: {{ peerrid }}
-    name: spine {{ cnt+1 }} Overlay
+    name: {{ peerrole }} {{ cnt+1 }} Overlay
     peergroup: spine-leaf
     remote_asn: {{ peerasn }}
     send_community:
@@ -442,3 +451,7 @@ os10_vrf:
       state: present
 {% endif %}
 
+{% if role == 'spine' %}
+os10_xstp:
+  intf: {}
+{% endif %}

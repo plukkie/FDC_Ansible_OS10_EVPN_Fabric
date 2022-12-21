@@ -17,8 +17,8 @@ os10_bgp:
     timer: 3 9
     type: peergroup
   - address_family:
-    - allow_as_in: 1
-      type: ipv4
+    - type: ipv4
+      allow_as_in: 1
     admin: up
     adv_interval: 1
     fall_over: present
@@ -49,8 +49,8 @@ os10_bgp:
     timer: 3 9
     type: ipv4
   - address_family:
-    - allow_as_in: 1
-      type: ipv4
+    - type: ipv4
+      allow_as_in: 1
     admin: up
     adv_interval: 1
     fall_over: present
@@ -81,8 +81,8 @@ os10_bgp:
     timer: 3 9
     type: ipv4
   - address_family:
-    - allow_as_in: 1
-      type: ipv4
+    - type: ipv4
+      allow_as_in: 1
     admin: up
     adv_interval: 1
     fall_over: present
@@ -113,8 +113,8 @@ os10_bgp:
     timer: 3 9
     type: ipv4
   - address_family:
-    - allow_as_in: 1
-      type: ipv4
+    - type: ipv4
+      allow_as_in: 1
     admin: up
     adv_interval: 1
     fall_over: present

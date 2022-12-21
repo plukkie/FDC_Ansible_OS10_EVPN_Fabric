@@ -17,8 +17,7 @@ os10_bgp:
     timer: 3 9
     type: peergroup
   - address_family:
-    - allow_as_in: 1
-      type: ipv4
+    - type: ipv4
     admin: up
     adv_interval: 1
     fall_over: present
@@ -28,6 +27,7 @@ os10_bgp:
     timer: 3 9
     type: ipv4
     remote_asn: 64625
+    sender_loop_detect: false
   - address_family:
     - activate: false
       type: ipv4
@@ -35,7 +35,6 @@ os10_bgp:
       type: l2vpn
     admin: up
     adv_interval: 1
-    ebgp_multihop: 4
     fall_over: present
     ip: 10.0.2.1
     name: spine 1 Overlay
@@ -49,8 +48,7 @@ os10_bgp:
     timer: 3 9
     type: ipv4
   - address_family:
-    - allow_as_in: 1
-      type: ipv4
+    - type: ipv4
     admin: up
     adv_interval: 1
     fall_over: present
@@ -60,6 +58,7 @@ os10_bgp:
     timer: 3 9
     type: ipv4
     remote_asn: 64625
+    sender_loop_detect: false
   - address_family:
     - activate: false
       type: ipv4
@@ -67,7 +66,6 @@ os10_bgp:
       type: l2vpn
     admin: up
     adv_interval: 1
-    ebgp_multihop: 4
     fall_over: present
     ip: 10.0.2.2
     name: spine 2 Overlay
@@ -81,8 +79,7 @@ os10_bgp:
     timer: 3 9
     type: ipv4
   - address_family:
-    - allow_as_in: 1
-      type: ipv4
+    - type: ipv4
     admin: up
     adv_interval: 1
     fall_over: present
@@ -92,6 +89,7 @@ os10_bgp:
     timer: 3 9
     type: ipv4
     remote_asn: 64626
+    sender_loop_detect: false
   - address_family:
     - activate: false
       type: ipv4
@@ -99,7 +97,6 @@ os10_bgp:
       type: l2vpn
     admin: up
     adv_interval: 1
-    ebgp_multihop: 4
     fall_over: present
     ip: 10.0.2.3
     name: spine 3 Overlay
@@ -113,8 +110,7 @@ os10_bgp:
     timer: 3 9
     type: ipv4
   - address_family:
-    - allow_as_in: 1
-      type: ipv4
+    - type: ipv4
     admin: up
     adv_interval: 1
     fall_over: present
@@ -124,6 +120,7 @@ os10_bgp:
     timer: 3 9
     type: ipv4
     remote_asn: 64626
+    sender_loop_detect: false
   - address_family:
     - activate: false
       type: ipv4
@@ -131,7 +128,6 @@ os10_bgp:
       type: l2vpn
     admin: up
     adv_interval: 1
-    ebgp_multihop: 4
     fall_over: present
     ip: 10.0.2.4
     name: spine 4 Overlay
@@ -225,3 +221,6 @@ os10_route_map:
 os10_system:
   hostname: os10-SPINE-1 
 
+
+os10_xstp:
+  intf: {}
