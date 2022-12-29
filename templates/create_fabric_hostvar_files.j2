@@ -240,7 +240,7 @@ os10_interface:
 {% set astep = conf['gns3']['nodesdata']['templates'][role]['vlti']['adapterstep']|int %}
 {% set port = conf['gns3']['nodesdata']['templates'][role]['vlti']['port']|int %}
 {% set pstep = conf['gns3']['nodesdata']['templates'][role]['vlti']['portstep']|int %}
-{% set vltirange = slotsyntax+'/'+adapter|string+'-'+slotsyntax+'/'+(vlticount+adapter)|string %}
+{% set vltirange = slotsyntax+'/'+adapter|string+'-'+slotsyntax+'/'+(vlticount-1+adapter)|string %}
 {{ global.update ( { 'int' : adapter } ) -}}
 {% for x in range(vlticount) %}
   ethernet {{ slotsyntax }}/{{ global.int }}:
